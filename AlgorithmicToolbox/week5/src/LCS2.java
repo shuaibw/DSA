@@ -3,8 +3,18 @@ import java.util.*;
 public class LCS2 {
 
     private static int lcs2(int[] a, int[] b) {
-        //Write your code here
-        return Math.min(a.length, b.length);
+        int[][] dpAra = new int[a.length + 1][b.length + 1];
+        for (int i = 1; i <= a.length; i++) {
+            for (int j = 1; j <= b.length; j++) {
+                if (a[i - 1] == b[j - 1]) {
+                    dpAra[i][j] = dpAra[i - 1][j - 1] + 1;
+                } else {
+                    dpAra[i][j] = Math.max(dpAra[i - 1][j], dpAra[i][j - 1]);
+                }
+
+            }
+        }
+        return dpAra[a.length][b.length];
     }
 
     public static void main(String[] args) {
