@@ -1,4 +1,6 @@
 **/out
+*.mkv
+*.mp4
 **/.idea
 *.iml
 /*.pdf
