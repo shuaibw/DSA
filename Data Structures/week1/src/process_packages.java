@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Scanner;
 
 class Request {
@@ -24,17 +25,35 @@ class Response {
 
 class Buffer {
     public Buffer(int size) {
-        this.size_ = size;
-        this.finish_time_ = new ArrayList<Integer>();
+        this.size = size;
+        this.buffer = new LinkedList<>();
     }
 
     public Response Process(Request request) {
-        // write your code here
+        if (buffer.size() < size) {
+            if (buffer.isEmpty()) {
+                buffer.addLast(request.arrival_time + request.process_time);
+                return new Response(false, request.arrival_time);
+            }
+            if (request.arrival_time < buffer.peekFirst()) {
+                int start = buffer.peekLast();
+                buffer.addLast(start + request.process_time);
+                return new Response(false, start);
+            }
+        } else if (buffer.peekFirst() <= request.arrival_time) {
+            int start = buffer.removeFirst();
+            if (buffer.size() != 0) {
+                start = buffer.peekLast();
+            }
+            if (start < request.arrival_time) start = request.arrival_time;
+            buffer.addLast(start + request.process_time);
+            return new Response(false, start);
+        }
         return new Response(false, -1);
     }
 
-    private int size_;
-    private ArrayList<Integer> finish_time_;
+    private int size;
+    private LinkedList<Integer> buffer;
 }
 
 class process_packages {
@@ -50,7 +69,7 @@ class process_packages {
     }
 
     private static ArrayList<Response> ProcessRequests(ArrayList<Request> requests, Buffer buffer) {
-        ArrayList<Response> responses = new ArrayList<Response>();
+        ArrayList<Response> responses = new ArrayList<>();
         for (int i = 0; i < requests.size(); ++i) {
             responses.add(buffer.Process(requests.get(i)));
         }
