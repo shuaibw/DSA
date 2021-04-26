@@ -1,95 +1,21 @@
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 
-public class BuildHeap {
-    private int[] data;
-    private List<Swap> swaps;
-
-    private FastScanner in;
-    private PrintWriter out;
-
-    public static void main(String[] args) throws IOException {
-        new BuildHeap().solve();
-    }
-
-    private void readData() throws IOException {
-        int n = in.nextInt();
-        data = new int[n];
-        for (int i = 0; i < n; ++i) {
-            data[i] = in.nextInt();
-        }
-    }
-
-    private void writeResponse() {
-        out.println(swaps.size());
-        for (Swap swap : swaps) {
-            out.println(swap.index1 + " " + swap.index2);
-        }
-    }
-
-    private void generateSwaps() {
-        swaps = new ArrayList<>();
-        // The following naive implementation just sorts
-        // the given sequence using selection sort algorithm
-        // and saves the resulting sequence of swaps.
-        // This turns the given array into a heap,
-        // but in the worst case gives a quadratic number of swaps.
-        //
-        // TODO: replace by a more efficient implementation
-        for (int i = data.length / 2; i >= 0; i--) {
-            siftDown(i);
-        }
-    }
-
-    private void siftDown(int i) {
-        while (i < data.length) {
-            int left = 2 * i + 1;
-            int right = 2 * i + 2;
-            int min = i;
-            if (left < data.length && data[left] < data[i]) min = left;
-            if (right < data.length && data[right] < data[min]) min = right;
-            if (min == i) break;
-            swaps.add(new Swap(i, min));
-            int temp = data[i];
-            data[i] = data[min];
-            data[min] = temp;
-            i = min;
-        }
-    }
-
-    public void solve() throws IOException {
-        in = new FastScanner();
-        out = new PrintWriter(new BufferedOutputStream(System.out));
-        readData();
-        generateSwaps();
-        writeResponse();
-        out.close();
-    }
-
-    static class Swap {
-        int index1;
-        int index2;
-
-        public Swap(int index1, int index2) {
-            this.index1 = index1;
-            this.index2 = index2;
-        }
-    }
-
-    static class FastScanner {
+public class cf {
+    static class Reader {
         final private int BUFFER_SIZE = 1 << 16;
         private DataInputStream din;
         private byte[] buffer;
         private int bufferPointer, bytesRead;
 
-        public FastScanner() {
+        public Reader() {
             din = new DataInputStream(System.in);
             buffer = new byte[BUFFER_SIZE];
             bufferPointer = bytesRead = 0;
         }
 
-        public FastScanner(String file_name) throws IOException {
+        public Reader(String file_name) throws IOException {
             din = new DataInputStream(
                     new FileInputStream(file_name));
             buffer = new byte[BUFFER_SIZE];
@@ -187,6 +113,39 @@ public class BuildHeap {
             if (din == null)
                 return;
             din.close();
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        Reader r = new Reader();
+        int t = r.nextInt();
+        while (t-- != 0) {
+            int n = r.nextInt();
+            int k = r.nextInt();
+            int[] ara = new int[n];
+            for (int i = 0; i < n; i++) {
+                ara[i] = r.nextInt();
+            }
+            int max = Integer.MIN_VALUE;
+            int idx = -1;
+            for (int i = 1; i < n; i++) {
+                if (ara[i] > max) {
+                    max = ara[i];
+                    idx = i;
+                }
+            }
+
+            if (ara[0] < k) {
+                ara[idx] += ara[0];
+                ara[0] = 0;
+            } else {
+                ara[0] -= k;
+                ara[idx] += k;
+            }
+            for (int i : ara) {
+                System.out.printf("%d ", i);
+            }
+            System.out.println();
         }
     }
 }

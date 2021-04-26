@@ -1,6 +1,5 @@
 import java.io.*;
 import java.util.Locale;
-import java.util.StringTokenizer;
 
 public class MergingTables {
     private final InputReader reader;
@@ -11,8 +10,8 @@ public class MergingTables {
         this.writer = writer;
     }
 
-    public static void main(String[] args) {
-        InputReader reader = new InputReader(System.in);
+    public static void main(String[] args) throws IOException {
+        InputReader reader = new InputReader();
         OutputWriter writer = new OutputWriter(System.out);
         new MergingTables(reader, writer).run();
         writer.writer.flush();
@@ -28,8 +27,10 @@ public class MergingTables {
             rank = 0;
             parent = this;
         }
+
         Table getParent() {
             // find super parent and compress path
+            while (parent.parent != parent) parent = parent.parent;
             return parent;
         }
     }
@@ -37,17 +38,33 @@ public class MergingTables {
     int maximumNumberOfRows = -1;
 
     void merge(Table destination, Table source) {
-        Table realDestination = destination.getParent();
-        Table realSource = source.getParent();
-        if (realDestination == realSource) {
+        Table dest = destination.getParent();
+        Table src = source.getParent();
+        if (dest == src) {
             return;
         }
         // merge two components here
         // use rank heuristic
         // update maximumNumberOfRows
+        if (dest.rank > src.rank) {
+            dest.numberOfRows += src.numberOfRows;
+            if (maximumNumberOfRows < dest.numberOfRows) maximumNumberOfRows = dest.numberOfRows;
+            src.parent = dest;
+            src.numberOfRows = 0;
+        } else {
+            src.numberOfRows += dest.numberOfRows;
+            if (maximumNumberOfRows < src.numberOfRows) maximumNumberOfRows = src.numberOfRows;
+            dest.parent = src;
+            dest.numberOfRows = 0;
+        }
+        if (src.rank == dest.rank) src.rank += 1;
+//        dest.numberOfRows += src.numberOfRows;
+//        if (dest.numberOfRows > maximumNumberOfRows) maximumNumberOfRows = dest.numberOfRows;
+//        src.numberOfRows = 0;
+//        src.parent = dest;
     }
 
-    public void run() {
+    public void run() throws IOException {
         int n = reader.nextInt();
         int m = reader.nextInt();
         Table[] tables = new Table[n];
@@ -66,35 +83,115 @@ public class MergingTables {
 
 
     static class InputReader {
-        public BufferedReader reader;
-        public StringTokenizer tokenizer;
+        final private int BUFFER_SIZE = 1 << 16;
+        private DataInputStream din;
+        private byte[] buffer;
+        private int bufferPointer, bytesRead;
 
-        public InputReader(InputStream stream) {
-            reader = new BufferedReader(new InputStreamReader(stream), 32768);
-            tokenizer = null;
+        public InputReader() {
+            din = new DataInputStream(System.in);
+            buffer = new byte[BUFFER_SIZE];
+            bufferPointer = bytesRead = 0;
         }
 
-        public String next() {
-            while (tokenizer == null || !tokenizer.hasMoreTokens()) {
-                try {
-                    tokenizer = new StringTokenizer(reader.readLine());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+        public InputReader(String file_name) throws IOException {
+            din = new DataInputStream(
+                    new FileInputStream(file_name));
+            buffer = new byte[BUFFER_SIZE];
+            bufferPointer = bytesRead = 0;
+        }
+
+        public String readLine() throws IOException {
+            byte[] buf = new byte[64]; // line length
+            int cnt = 0, c;
+            while ((c = read()) != -1) {
+                if (c == '\n') {
+                    if (cnt != 0) {
+                        break;
+                    } else {
+                        continue;
+                    }
+                }
+                buf[cnt++] = (byte) c;
+            }
+            return new String(buf, 0, cnt);
+        }
+
+        public int nextInt() throws IOException {
+            int ret = 0;
+            byte c = read();
+            while (c <= ' ') {
+                c = read();
+            }
+            boolean neg = (c == '-');
+            if (neg)
+                c = read();
+            do {
+                ret = ret * 10 + c - '0';
+            } while ((c = read()) >= '0' && c <= '9');
+
+            if (neg)
+                return -ret;
+            return ret;
+        }
+
+        public long nextLong() throws IOException {
+            long ret = 0;
+            byte c = read();
+            while (c <= ' ')
+                c = read();
+            boolean neg = (c == '-');
+            if (neg)
+                c = read();
+            do {
+                ret = ret * 10 + c - '0';
+            } while ((c = read()) >= '0' && c <= '9');
+            if (neg)
+                return -ret;
+            return ret;
+        }
+
+        public double nextDouble() throws IOException {
+            double ret = 0, div = 1;
+            byte c = read();
+            while (c <= ' ')
+                c = read();
+            boolean neg = (c == '-');
+            if (neg)
+                c = read();
+
+            do {
+                ret = ret * 10 + c - '0';
+            } while ((c = read()) >= '0' && c <= '9');
+
+            if (c == '.') {
+                while ((c = read()) >= '0' && c <= '9') {
+                    ret += (c - '0') / (div *= 10);
                 }
             }
-            return tokenizer.nextToken();
+
+            if (neg)
+                return -ret;
+            return ret;
         }
 
-        public int nextInt() {
-            return Integer.parseInt(next());
+        private void fillBuffer() throws IOException {
+            bytesRead = din.read(buffer, bufferPointer = 0,
+                    BUFFER_SIZE);
+            if (bytesRead == -1)
+                buffer[0] = -1;
         }
 
-        public double nextDouble() {
-            return Double.parseDouble(next());
+        private byte read() throws IOException {
+            if (bufferPointer == bytesRead)
+                fillBuffer();
+            return buffer[bufferPointer++];
         }
 
-        public long nextLong() {
-            return Long.parseLong(next());
+        public void close() throws IOException {
+            if (din == null)
+                return;
+            din.close();
         }
     }
 
