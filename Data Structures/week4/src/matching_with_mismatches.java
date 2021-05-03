@@ -3,7 +3,7 @@ import java.util.stream.Collectors;
 import java.io.*;
 
 public class matching_with_mismatches {
-    private int prime = 1000000007, threshold;
+    private int prime = 1000000007;
     private long x;
     private long[] expo;
     private int[] tHash, pHash;
@@ -15,7 +15,6 @@ public class matching_with_mismatches {
         x = new Random().nextInt(prime - 1) + 1;
         expo = new long[p.length() + 1];
         for (int i = 0; i <= p.length(); i++) expo[i] = power(x, i, prime);
-        threshold = k;
         ArrayList<Integer> pos = new ArrayList<>();
         tHash = preComputeHash(t);
         pHash = preComputeHash(p);
