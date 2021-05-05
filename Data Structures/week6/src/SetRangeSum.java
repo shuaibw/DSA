@@ -73,7 +73,7 @@ public class SetRangeSum {
             smallRotation(v.parent);
             smallRotation(v);
         } else if (v.parent.right == v && v.parent.parent.right == v.parent) {
-            // Zig-zig
+            // Zag-zag
             smallRotation(v.parent);
             smallRotation(v);
         } else {
@@ -99,8 +99,10 @@ public class SetRangeSum {
     class VertexPair {
         Vertex left;
         Vertex right;
+
         VertexPair() {
         }
+
         VertexPair(Vertex left, Vertex right) {
             this.left = left;
             this.right = right;
@@ -188,12 +190,15 @@ public class SetRangeSum {
 
     void erase(int x) {
         // Implement erase yourself
-
+        VertexPair pair = find(root, x);
+        Vertex newRoot = pair.right;
+        if (pair.left != null) root = merge(newRoot.left, newRoot.right);
     }
 
     boolean find(int x) {
         // Implement find yourself
-
+        VertexPair pair = find(root, x);
+        if (pair.left != null) return true;
         return false;
     }
 
@@ -219,24 +224,27 @@ public class SetRangeSum {
         for (int i = 0; i < n; i++) {
             char type = nextChar();
             switch (type) {
-                case '+' : {
+                case '+': {
                     int x = nextInt();
                     insert((x + last_sum_result) % MODULO);
-                } break;
-                case '-' : {
+                }
+                break;
+                case '-': {
                     int x = nextInt();
                     erase((x + last_sum_result) % MODULO);
-                } break;
-                case '?' : {
+                }
+                break;
+                case '?': {
                     int x = nextInt();
                     out.println(find((x + last_sum_result) % MODULO) ? "Found" : "Not found");
-                } break;
-                case 's' : {
+                }
+                break;
+                case 's': {
                     int l = nextInt();
                     int r = nextInt();
                     long res = sum((l + last_sum_result) % MODULO, (r + last_sum_result) % MODULO);
                     out.println(res);
-                    last_sum_result = (int)(res % MODULO);
+                    last_sum_result = (int) (res % MODULO);
                 }
             }
         }
@@ -268,6 +276,7 @@ public class SetRangeSum {
     int nextInt() throws IOException {
         return Integer.parseInt(nextToken());
     }
+
     char nextChar() throws IOException {
         return nextToken().charAt(0);
     }
