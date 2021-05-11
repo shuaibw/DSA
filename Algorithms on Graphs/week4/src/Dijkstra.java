@@ -2,10 +2,11 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
-public class Bipartite {
+public class Dijkstra {
     static class FastScanner {
         final private int BUFFER_SIZE = 1 << 16;
         private DataInputStream din;
@@ -119,31 +120,39 @@ public class Bipartite {
         }
     }
 
+    static class Vertex {
+        int idx;
+        long dist;
 
+        Vertex(int idx, long dist) {
+            this.idx = idx;
+            this.dist = dist;
+        }
+    }
 
-    private static int bipartite(ArrayList<Integer>[] adj) {
-        Queue<Integer> queue = new LinkedList<>();
-        int[] color = new int[adj.length];//0-->unv
-        int p = 1;
-        for (int i = 0; i < adj.length; i++) {
-            if (color[i] == 0) {
-                queue.add(i);
-                color[i] = p;
-            }
-            while (!queue.isEmpty()) {
-                int v = queue.remove();
-                if (color[v] == 1) {
-                    p = 2;
-                } else p = 1;
-                for (Integer n : adj[v]) {
-                    if (color[n] == 0) {
-                        queue.add(n);
-                        color[n] = p;
-                    } else if (color[v] == color[n]) return 0;
+    private static long distance(ArrayList<Integer>[] adj, ArrayList<Integer>[] cost, int s, int t) {
+        boolean[] visited = new boolean[adj.length];
+        long[] dist = new long[adj.length];
+        Arrays.fill(dist, Long.MAX_VALUE);
+        dist[s] = 0;
+        PriorityQueue<Vertex> pq = new PriorityQueue<>(Comparator.comparingLong(o -> o.dist));
+        pq.add(new Vertex(s, 0));
+        while (!pq.isEmpty()) {
+            Vertex cur = pq.poll();
+            visited[cur.idx] = true;
+            if (dist[cur.idx] < cur.dist) continue;
+            for (int i = 0; i < adj[cur.idx].size(); i++) {
+                int n = adj[cur.idx].get(i);
+                if (visited[n]) continue;
+                long newDist = dist[cur.idx] + cost[cur.idx].get(i);
+                if (newDist < dist[n]) {
+                    dist[n] = newDist;
+                    pq.add(new Vertex(n, newDist));
                 }
             }
+            if (cur.idx == t) break;
         }
-        return 1;
+        return dist[t] != Long.MAX_VALUE ? dist[t] : -1;
     }
 
     public static void main(String[] args) throws IOException {
@@ -151,17 +160,22 @@ public class Bipartite {
         int n = scanner.nextInt();
         int m = scanner.nextInt();
         ArrayList<Integer>[] adj = (ArrayList<Integer>[]) new ArrayList[n];
+        ArrayList<Integer>[] cost = (ArrayList<Integer>[]) new ArrayList[n];
         for (int i = 0; i < n; i++) {
             adj[i] = new ArrayList<>();
+            cost[i] = new ArrayList<>();
         }
         for (int i = 0; i < m; i++) {
-            int x, y;
+            int x, y, w;
             x = scanner.nextInt();
             y = scanner.nextInt();
+            w = scanner.nextInt();
             adj[x - 1].add(y - 1);
-            adj[y - 1].add(x - 1);
+            cost[x - 1].add(w);
         }
-        System.out.println(bipartite(adj));
+        int x = scanner.nextInt() - 1;
+        int y = scanner.nextInt() - 1;
+        System.out.println(distance(adj, cost, x, y));
     }
 }
 
