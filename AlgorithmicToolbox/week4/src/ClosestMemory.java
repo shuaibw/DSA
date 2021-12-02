@@ -46,7 +46,7 @@ public class ClosestMemory {
 
     static long minimalSplitDist(ArrayList<Point> sortedX, ArrayList<Point> sortedY, long delta) {
         assert sortedX.size() == sortedY.size() && sortedX.size() >= 3;
-        long x = sortedX.get(sortedX.size() / 2 - 1).x;
+        long x = sortedX.get(sortedX.size() / 2).x;
         ArrayList<Point> deltaY = new ArrayList<>();
         for (Point p : sortedY) {
             if (p.x >= (x - delta) && p.x <= (x + delta)) deltaY.add(p);

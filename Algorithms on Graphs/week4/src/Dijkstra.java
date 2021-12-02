@@ -140,7 +140,10 @@ public class Dijkstra {
         while (!pq.isEmpty()) {
             Vertex cur = pq.poll();
             visited[cur.idx] = true;
-            if (dist[cur.idx] < cur.dist) continue;
+            if (cur.idx == t) break; //early stopping
+            if (dist[cur.idx] < cur.dist) {
+                continue; //if the distance from some other vertex is worse than upper bound, just skip
+            }
             for (int i = 0; i < adj[cur.idx].size(); i++) {
                 int n = adj[cur.idx].get(i);
                 if (visited[n]) continue;
@@ -150,7 +153,6 @@ public class Dijkstra {
                     pq.add(new Vertex(n, newDist));
                 }
             }
-            if (cur.idx == t) break;
         }
         return dist[t] != Long.MAX_VALUE ? dist[t] : -1;
     }

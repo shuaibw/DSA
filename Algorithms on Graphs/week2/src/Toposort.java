@@ -36,7 +36,7 @@ public class Toposort {
         int m = scanner.nextInt();
         ArrayList<Integer>[] adj = (ArrayList<Integer>[]) new ArrayList[n];
         for (int i = 0; i < n; i++) {
-            adj[i] = new ArrayList<Integer>();
+            adj[i] = new ArrayList<>();
         }
         for (int i = 0; i < m; i++) {
             int x, y;

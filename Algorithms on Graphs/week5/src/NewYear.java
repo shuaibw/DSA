@@ -1,9 +1,8 @@
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
 public class NewYear {
     static class FastScanner {
@@ -119,41 +118,82 @@ public class NewYear {
         }
     }
 
+    static class Vertex {
+        int idx;
+        long dist;
+
+        Vertex(int idx, long dist) {
+            this.idx = idx;
+            this.dist = dist;
+        }
+    }
+
+    private static ArrayList<Integer> distance(ArrayList<Integer>[] adj, ArrayList<Integer>[] cost, int s, int t) {
+        boolean[] visited = new boolean[adj.length];
+        long[] dist = new long[adj.length];
+        int[] prev = new int[adj.length];
+        Arrays.fill(prev, -1);
+        prev[s] = -2;
+        Arrays.fill(dist, Long.MAX_VALUE);
+        dist[s] = 0;
+        PriorityQueue<Vertex> pq = new PriorityQueue<>(Comparator.comparingLong(o -> o.dist));
+        pq.add(new Vertex(s, 0));
+        while (!pq.isEmpty()) {
+            Vertex cur = pq.poll();
+            visited[cur.idx] = true;
+            if (dist[cur.idx] < cur.dist) continue;
+            for (int i = 0; i < adj[cur.idx].size(); i++) {
+                int n = adj[cur.idx].get(i);
+                if (visited[n]) continue;
+                long newDist = dist[cur.idx] + cost[cur.idx].get(i);
+                if (newDist < dist[n]) {
+                    dist[n] = newDist;
+                    prev[n] = cur.idx;
+                    pq.add(new Vertex(n, newDist));
+                }
+            }
+            if (cur.idx == t) break;
+        }
+        ArrayList<Integer> path = new ArrayList<>();
+        path.add(t);
+        while (prev[t] != -2) {
+            t = prev[t];
+            path.add(t);
+            if (t == -1) {
+                path.clear();
+                path.add(-2);
+                return path;
+            }
+        }
+        return path;
+    }
+
     public static void main(String[] args) throws IOException {
         FastScanner scanner = new FastScanner();
+        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(System.out), 1000000);
         int n = scanner.nextInt();
         int m = scanner.nextInt();
         ArrayList<Integer>[] adj = (ArrayList<Integer>[]) new ArrayList[n];
-        int[] cat = new int[n];
-        for (int i = 0; i < n; i++) cat[i] = scanner.nextInt();
-        for (int i = 0; i < n; i++) adj[i] = new ArrayList<>();
-        for (int i = 0; i < n - 1; i++) {
-            int from = scanner.nextInt();
-            int to = scanner.nextInt();
-            if (from < to) adj[from - 1].add(to - 1);
-            else adj[to - 1].add(from - 1);
+        ArrayList<Integer>[] cost = (ArrayList<Integer>[]) new ArrayList[n];
+        for (int i = 0; i < n; i++) {
+            adj[i] = new ArrayList<>();
+            cost[i] = new ArrayList<>();
         }
-        int[] continuousCat = new int[n];
-        Queue<Integer> queue = new LinkedList<>();
-        queue.add(0);
-        int[] level = new int[n];
-        continuousCat[0] = cat[0];
-        ArrayList<Integer> list = new ArrayList<>();
-        while (!queue.isEmpty()) {
-            int v = queue.poll();
-            if (adj[v].isEmpty()) list.add(continuousCat[v]);
-            for (Integer k : adj[v]) {
-                queue.add(k);
-                level[k] = level[v] + 1;
-                continuousCat[k] = continuousCat[v];
-                if (continuousCat[k] == -1) continue;
-                if (cat[k] == 1) {
-                    continuousCat[k]++;
-                    if (continuousCat[k] > m) continuousCat[k] = -1;
-                } else continuousCat[k] = 0;
-            }
+        for (int i = 0; i < m; i++) {
+            int x, y, w;
+            x = scanner.nextInt();
+            y = scanner.nextInt();
+            w = scanner.nextInt();
+            adj[x - 1].add(y - 1);
+            adj[y - 1].add(x - 1);
+            cost[x - 1].add(w);
+            cost[y - 1].add(w);
         }
-        int paths = list.stream().filter(integer -> integer != -1).mapToInt(e -> 1).sum();
-        System.out.println(paths);
+        ArrayList<Integer> path = distance(adj, cost, 0, n - 1);
+        for (int i = path.size() - 1; i >= 0; i--) {
+            out.write((path.get(i) + 1) + " ");
+        }
+        out.flush();
+        out.close();
     }
 }
